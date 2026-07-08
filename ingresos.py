@@ -1,11 +1,11 @@
 # Funcion para registrar ingresos
 def registrar_ingreso(conn, cursor):
     # Preguntar datos
-    fecha = input("Ingrese fecha (AAAA-MM-DD): \n")
+    fecha = input("Ingrese fecha (AAAA-MM-DD): ")
     nombre = input("Ingrese nombre: \n")
-    baño = float(input("Ingrese monto del baño: \n"))
-    agua = float(input("Ingrese monto del agua: \n"))
-    papel = float(input("Ingrese monto del papel: \n"))
+    baño = float(input("Ingrese monto del baño: "))
+    agua = float(input("Ingrese monto del agua: "))
+    papel = float(input("Ingrese monto del papel: "))
     
     # Tupla para insertar valores a la tabla
     datos = (fecha, nombre, baño, agua, papel)
@@ -23,12 +23,12 @@ def mostrar_ingresos(cursor):
     cursor.execute("SELECT * FROM Ingresos")
     
     # Ver resultado
-    registros = cursor.fetchall()
-    for registro in registros:
-        print(registro)
+    ingresos = cursor.fetchall()
+    for ingreso in ingresos:
+        print(ingreso)
 
 def editar_ingreso(conn, cursor):
-    id_ingreso = int(input("Ingrese el ID: \n"))
+    id_ingreso = int(input("Ingrese el ID: "))
 
     # Consultar si el ID existe en la base de datos
     cursor.execute("SELECT * FROM Ingresos WHERE id = ?", (id_ingreso,)) # (id_ingreso,) tupla de un solo elemento
@@ -54,28 +54,28 @@ def editar_ingreso(conn, cursor):
         """)
 
         # Lógica para guardar o mantener datos
-        nueva_fecha = input("Nueva Fecha: \n")
+        nueva_fecha = input("Nueva Fecha: ")
         if nueva_fecha == "":
             nueva_fecha = fila[1]
 
-        nuevo_nombre = input("Nuevo Nombre: \n")
+        nuevo_nombre = input("Nuevo Nombre: ")
         if nuevo_nombre == "":
             nuevo_nombre = fila[2]
         
         # Cambiar str a float para que no haya errores en los datos
-        nuevo_baño = input("Nuevo Baño: \n")
+        nuevo_baño = input("Nuevo Baño: ")
         if nuevo_baño == "":
             nuevo_baño = fila[3]
         else:
             nuevo_baño = float(nuevo_baño)
 
-        nuevo_agua = input("Nuevo Agua: \n")
+        nuevo_agua = input("Nuevo Agua: ")
         if nuevo_agua == "":
             nuevo_agua = fila[4]
         else:
             nuevo_agua = float(nuevo_agua)
         
-        nuevo_papel = input("Nuevo Papel: \n")
+        nuevo_papel = input("Nuevo Papel: ")
         if nuevo_papel == "":
             nuevo_papel = fila[5]
         else:
@@ -100,7 +100,7 @@ def editar_ingreso(conn, cursor):
         print("Ingreso actualizado correctamente.\n")
 
 def eliminar_ingreso(conn, cursor):
-    id_ingreso = int(input("Ingrese el ID: \n"))
+    id_ingreso = int(input("Ingrese el ID: "))
 
     # Consultar si el ID existe en la Base de datos
     cursor.execute("SELECT * FROM Ingresos WHERE id = ?", (id_ingreso,))

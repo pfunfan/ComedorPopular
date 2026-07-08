@@ -1,21 +1,21 @@
 # Funcion para registrar egresos
 def registrar_egreso(conn, cursor):
     # Preguntar datos
-    fecha = input("Ingrese fecha (AAAA-MM-DD): \n")
-    concepto = input("Ingrese concepto: \n")
-    monto = float(input("Ingrese el monto: \n"))
+    fecha = input("Ingrese fecha (AAAA-MM-DD): ")
+    concepto = input("Ingrese concepto: ")
+    monto = float(input("Ingrese el monto: "))
     
     # Tupla para insertar valores a la tabla
-    tupla = (fecha, concepto, monto)
+    egreso = (fecha, concepto, monto)
 
     # Insertar valores
     cursor.execute("""INSERT INTO Egresos (fecha, concepto, monto)
-         VALUES (?, ?, ?)""", tupla)
+         VALUES (?, ?, ?)""", egreso)
     
     # Guardar cambios
     conn.commit()
     
-    print("Egreso guardado correctamente\n")
+    print("Egreso guardado correctamente.\n")
 
 def mostrar_egresos(cursor):
     # Leer datos (Selecciona todos los datos)
@@ -23,10 +23,11 @@ def mostrar_egresos(cursor):
     
     # Ver resultado
     egresos = cursor.fetchall()
-    print("""d""")
+    for egreso in egresos:
+        print(egreso)
 
 def editar_egreso(conn, cursor):
-    id_egreso = int(input("Escriba el ID: \n"))
+    id_egreso = int(input("Escriba el ID: "))
 
     # Consultar si el ID existe en la base de datos
     cursor.execute("SELECT * FROM Egresos WHERE id = ?", (id_egreso,)) # (id_egreso,) tupla de un solo elemento
@@ -50,16 +51,16 @@ def editar_egreso(conn, cursor):
         """)
 
         # Lógica para guardar o mantener datos
-        nueva_fecha = input("Nueva Fecha: \n")
+        nueva_fecha = input("Nueva Fecha: ")
         if nueva_fecha == "":
             nueva_fecha = fila[1]
 
-        nuevo_concepto = input("Nuevo Concepto: \n")
+        nuevo_concepto = input("Nuevo Concepto: ")
         if nuevo_concepto == "":
             nuevo_concepto = fila[2]
         
         # Cambiar str a float para que no haya errores en los datos
-        nuevo_monto = input("Nuevo Monto: \n")
+        nuevo_monto = input("Nuevo Monto: ")
         if nuevo_monto == "":
             nuevo_monto = fila[3]
         else:
@@ -82,7 +83,7 @@ def editar_egreso(conn, cursor):
         print("Egreso actualizado correctamente.\n")
 
 def eliminar_egreso(conn, cursor):
-    id_egreso = int(input("Ingrese el ID: \n"))
+    id_egreso = int(input("Ingrese el ID: "))
 
     # Consultar si el ID existe en la Base de datos
     cursor.execute("SELECT * FROM Egresos WHERE id = ?", (id_egreso,))
@@ -96,7 +97,7 @@ def eliminar_egreso(conn, cursor):
     else:
         # Mostrar registro
         print(f"""
-                DATOS ACTUALES
+                DATOS ACTUALES:
                      
         Fecha   : {fila[1]}
         Concepto: {fila[2]}
