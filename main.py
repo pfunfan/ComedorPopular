@@ -14,46 +14,71 @@ while True:
     print("""
     =========== COMEDOR POPULAR ===========
           
-    1. Registrar Ingreso
-    2. Registrar Egreso
-    3. Mostrar Ingresos
-    4. Mostrar Egresos
-    5. Editar Ingreso
-    6. Editar Egreso
-    7. Eliminar Ingreso
-    8. Eliminar Egreso
-    9. Generar PDF
-    10. Salir
+    1. Ingresos
+    2. Egresos
+    3. Generar reporte mensual (PDF)
+    0. Salir
     """)
 
-    opcion = int(input("Seleccione una opción: "))
+    opcion_main = int(input("Seleccione una opción: "))
 
-    match opcion:
-        case 1:
+    if opcion_main == 1:
+        print("""
+        ========= INGRESOS =========
+
+        1. Registrar ingreso
+        2. Mostrar ingresos
+        3. Editar ingreso
+        4. Eliminar ingreso
+        0. Volver
+        """)
+
+        opcion_ingresos = int(input("Seleccione una opción: "))
+
+        if opcion_ingresos == 1:
             registrar_ingreso(conn, cursor)
-        case 2:
-            registrar_egreso(conn, cursor)
-        case 3:
+        elif opcion_ingresos == 2:
             mostrar_ingresos(cursor)
-        case 4:
-            mostrar_egresos(cursor)
-        case 5:
+        elif opcion_ingresos == 3:
             editar_ingreso(conn, cursor)
-        case 6:
-            editar_egreso(conn, cursor)
-        case 7:
+        elif opcion_ingresos == 4:
             eliminar_ingreso(conn, cursor)
-        case 8:
+        elif opcion_ingresos == 0:
+            pass # No hace nada y regresa al menú de arriba automáticamente
+        else:
+            print("Opción no válida. Intente de nuevo.")
+    elif opcion_main == 2:
+        print("""
+        ========= EGRESOS =========
+
+        1. Registrar egreso
+        2. Mostrar egresos
+        3. Editar egreso
+        4. Eliminar egreso
+        0. Volver""")
+
+        opcion_egresos = int(input("Seleccione una opción: "))
+
+        if opcion_egresos == 1:
+            registrar_egreso(conn, cursor)
+        elif opcion_egresos == 2:
+            mostrar_egresos(cursor)
+        elif opcion_egresos == 3:
+            editar_egreso(conn, cursor)
+        elif opcion_egresos == 4:
             eliminar_egreso(conn, cursor)
-        case 9:
-            month = int(input("Ingrese mes: \n"))
-            year = int(input("Ingrese año: \n"))
-            generar_pdf(conn, month, year)
-        case 10:
-            #Cerrar la conexión
-            conn.close()
-            break
-        case _:
-            print("Opcion no válida.")
+        elif opcion_egresos == 0:
+            pass # No hace nada y regresa al menú de arriba automáticamente
+        else:
+            print("Opción no válida. Intente de nuevo.")
+    elif opcion_main == 3:
+        month = int(input("Ingrese mes: "))
+        year = int(input("Ingrese año: "))
+        generar_pdf(conn, month, year)
+    elif opcion_main == 0:
+        conn.close()
+        break
+    else:
+        print("Opcion no válida. Intente de nuevo.")
 
     
