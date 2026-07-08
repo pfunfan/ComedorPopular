@@ -30,17 +30,17 @@ def mostrar_ingresos(cursor):
 def editar_ingreso(conn, cursor):
     id_ingreso = int(input("Escriba el ID: \n"))
 
-    # Consultar si id existe en la base de datos
+    # Consultar si el ID existe en la base de datos
     cursor.execute("SELECT * FROM Ingresos WHERE id = ?", (id_ingreso,)) # (id_ingreso,) tupla de un solo elemento
 
-    # Toma la primera fila en forma de tupla
+    # Guarda en una tupla la primera fila de lo seleccionado por cursor.execute()
     fila = cursor.fetchone()
 
-    # Comprobar si existe el id ingresado
+    # Comprobar si existe el ID ingresado
     if fila is None:
-        print("No existe el ID en la base de datos.\n")
+        print(f"No existe el ID = {id_ingreso} en la base de datos.\n")
     else:
-        print(f"""Datos actuales: 
+        print(f"""DATOS ACTUALES: 
               
               Fecha : {fila[1]}
               Nombre: {fila[2]}
@@ -93,5 +93,7 @@ def editar_ingreso(conn, cursor):
                         papel = ? 
                         WHERE id = ?
                        """, datos_actualizados)
+        
+        # Guardar cambios
         conn.commit()
         print("Ingreso actualizado correctamente.\n")
