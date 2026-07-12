@@ -1,47 +1,54 @@
-# Funcion para registrar ingresos
+from funciones_auxiliares import *
+
+# Registra un nuevo ingreso en la base de datos.
+# Solicita los datos al usuario, valida los montos y guarda el registro.
 def registrar_ingreso(conn, cursor):
-    # Preguntar datos
+    # Solicitar información del ingreso
     fecha = input("Ingrese fecha (AAAA-MM-DD): ")
-    nombre = input("Ingrese nombre: \n")
-    baño = float(input("Ingrese monto del baño: "))
-    agua = float(input("Ingrese monto del agua: "))
-    papel = float(input("Ingrese monto del papel: "))
+    nombre = input("Ingrese nombre: ")
+    baño = pedir_monto("Ingrese monto del baño: ")
+    agua = pedir_monto("Ingrese monto del agua: ")
+    papel = pedir_monto("Ingrese monto del papel: ")
     
-    # Tupla para insertar valores a la tabla
+    # Agrupar los datos en una tupla para enviarlos a la consulta SQL
     datos = (fecha, nombre, baño, agua, papel)
 
-    # Insertar valores
+    # Insertar el nuevo ingreso en la tabla Ingresos
     cursor.execute("""INSERT INTO Ingresos (fecha, nombre, baño, agua, papel)
          VALUES (?, ?, ?, ?, ?)""", datos)
     
-    # Guardar cambios
+    # Confirmar los cambios realizados en la base de datos
     conn.commit()
     print("Ingreso guardado correctamente\n")
 
+# Muestra todos los ingresos registrados en la base de datos.
 def mostrar_ingresos(cursor):
-    # Leer datos (Selecciona todos los datos)
+    # Obtener todos los registros de la tabla Ingresos
     cursor.execute("SELECT * FROM Ingresos")
     
-    # Ver resultado
+    # Guardar los resultados obtenidos y mostrarlos
     ingresos = cursor.fetchall()
     for ingreso in ingresos:
         print(ingreso)
 
+# Edita un ingreso existente mediante su ID.
+# Permite conservar los valores actuales dejando campos vacíos.
 def editar_ingreso(conn, cursor):
-    id_ingreso = int(input("Ingrese el ID: "))
+    # Solicitar el ID del registro que se desea modificar
+    id_ingreso = pedir_entero("Ingrese el ID: ")
 
-    # Consultar si el ID existe en la base de datos
-    cursor.execute("SELECT * FROM Ingresos WHERE id = ?", (id_ingreso,)) # (id_ingreso,) tupla de un solo elemento
+    # Buscar el ingreso seleccionado en la base de datos
+    cursor.execute("SELECT * FROM Ingresos WHERE id = ?", (id_ingreso,))
 
-    # Guarda en una tupla la primera fila de lo seleccionado por cursor.execute()
+    # Obtener la primera fila encontrada
     fila = cursor.fetchone()
 
-    # Comprobar si existe el ID ingresado
+    # Verificar si existe el registro solicitado
     if fila is None:
         print(f"No existe el ID = {id_ingreso} en la base de datos.\n")
     else:
         print(f"""
-                DATOS ACTUALES 
+        ======= DATOS ACTUALES ======= 
               
         Fecha : {fila[1]}
         Nombre: {fila[2]}
@@ -53,7 +60,7 @@ def editar_ingreso(conn, cursor):
         (Presione Enter para conservar el valor actual)
         """)
 
-        # Lógica para guardar o mantener datos
+        # Solicitar nuevos datos. Si el usuario deja vacío, mantiene el valor anterior.
         nueva_fecha = input("Nueva Fecha: ")
         if nueva_fecha == "":
             nueva_fecha = fila[1]
@@ -62,29 +69,22 @@ def editar_ingreso(conn, cursor):
         if nuevo_nombre == "":
             nuevo_nombre = fila[2]
         
-        # Cambiar str a float para que no haya errores en los datos
-        nuevo_baño = input("Nuevo Baño: ")
-        if nuevo_baño == "":
-            nuevo_baño = fila[3]
-        else:
-            nuevo_baño = float(nuevo_baño)
+        # Pedir nuevos montos permitiendo conservar los valores actuales
+        nuevo_baño = pedir_monto_opcional("Nuevo Baño: ", fila[3])
+        nuevo_agua = pedir_monto_opcional("Nuevo Agua: ", fila[4])
+        nuevo_papel = pedir_monto_opcional("Nuevo Papel: ", fila[5])
 
-        nuevo_agua = input("Nuevo Agua: ")
-        if nuevo_agua == "":
-            nuevo_agua = fila[4]
-        else:
-            nuevo_agua = float(nuevo_agua)
-        
-        nuevo_papel = input("Nuevo Papel: ")
-        if nuevo_papel == "":
-            nuevo_papel = fila[5]
-        else:
-            nuevo_papel = float(nuevo_papel)
+        # Crear tupla con los nuevos datos y el ID del registro a actualizar
+        datos_actualizados = (
+            nueva_fecha,
+            nuevo_nombre,
+            nuevo_baño,
+            nuevo_agua,
+            nuevo_papel,
+            id_ingreso
+        )
 
-        # Tupla creada para pasarle al cursor y actualizar
-        datos_actualizados = (nueva_fecha, nuevo_nombre, nuevo_baño, nuevo_agua, nuevo_papel, id_ingreso)
-
-        # Actualizar Ingresos
+        # Actualizar el registro seleccionado en la tabla Ingresos
         cursor.execute("""UPDATE Ingresos 
                        SET 
                         fecha = ?, 
@@ -95,26 +95,29 @@ def editar_ingreso(conn, cursor):
                         WHERE id = ?
                        """, datos_actualizados)
         
-        # Guardar cambios
+        # Guardar los cambios en la base de datos
         conn.commit()
         print("Ingreso actualizado correctamente.\n")
 
+# Elimina un ingreso existente mediante su ID.
+# Antes de eliminar solicita confirmación al usuario.
 def eliminar_ingreso(conn, cursor):
-    id_ingreso = int(input("Ingrese el ID: "))
+    # Solicitar el ID del ingreso a eliminar
+    id_ingreso = pedir_entero("Ingrese el ID: ")
 
-    # Consultar si el ID existe en la Base de datos
+    # Buscar el registro antes de eliminarlo para verificar que existe
     cursor.execute("SELECT * FROM Ingresos WHERE id = ?", (id_ingreso,))
 
-    # Guardar la fila seleccionada en el cursor
+    # Obtener el registro encontrado
     fila = cursor.fetchone()
 
-    # Comprobar si existe el ID en la base de datos
+    # Verificar si existe el ingreso
     if fila is None:
         print(f"No existe el ID = {id_ingreso} en la base de datos.\n")
     else:
-        # Mostrar registro
+        # Mostrar los datos del ingreso que será eliminado
         print(f"""
-                DATOS ACTUALES
+        ======= DATOS ACTUALES ======= 
                      
         Fecha : {fila[1]}
         Nombre: {fila[2]}
@@ -123,14 +126,15 @@ def eliminar_ingreso(conn, cursor):
         Papel : {fila[5]}
         """)
 
-        # Confirmar para eliminar y opciones
-        confirmacion = int(input("¿Esta seguro de eliminar el ingreso en pantalla? (1.Si  2.No): "))
-        if confirmacion == 1:
+        # Pedir confirmación antes de eliminar el registro
+        print("Se eliminará el ingreso mostrado.")
+        
+        if pedir_confirmacion() == "s":
+            # Eliminar el ingreso seleccionado
             cursor.execute("DELETE FROM Ingresos WHERE id = ?", (id_ingreso,))
-            # Guardar cambios
+
+            # Guardar los cambios realizados
             conn.commit()
-            print("Listo. Ingreso eliminado correctamente.\n")
-        elif confirmacion == 2:
-            print("Ok. Redirigiendo al menu.\n")
+            print("Ingreso eliminado correctamente.\n")
         else:
-            print("Error: redirigiendo al menu.\n")     
+            print("Ok. Redirigiendo al menú.\n")

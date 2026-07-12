@@ -1,46 +1,53 @@
-# Funcion para registrar egresos
+from funciones_auxiliares import *
+
+# Registra un nuevo egreso en la base de datos.
+# Solicita los datos al usuario, valida el monto y guarda el registro.
 def registrar_egreso(conn, cursor):
-    # Preguntar datos
+    # Solicitar información del egreso
     fecha = input("Ingrese fecha (AAAA-MM-DD): ")
     concepto = input("Ingrese concepto: ")
-    monto = float(input("Ingrese el monto: "))
+    monto = pedir_monto("Ingrese el monto: ")
     
-    # Tupla para insertar valores a la tabla
-    egreso = (fecha, concepto, monto)
+    # Agrupar los datos en una tupla para enviarlos a la consulta SQL
+    datos_egreso = (fecha, concepto, monto)
 
-    # Insertar valores
+    # Insertar el nuevo egreso en la tabla Egresos
     cursor.execute("""INSERT INTO Egresos (fecha, concepto, monto)
-         VALUES (?, ?, ?)""", egreso)
+         VALUES (?, ?, ?)""", datos_egreso)
     
-    # Guardar cambios
+    # Confirmar los cambios realizados en la base de datos
     conn.commit()
     
     print("Egreso guardado correctamente.\n")
 
+# Muestra todos los egresos registrados en la base de datos.
 def mostrar_egresos(cursor):
-    # Leer datos (Selecciona todos los datos)
+    # Obtener todos los registros de la tabla Egresos
     cursor.execute("SELECT * FROM Egresos")
     
-    # Ver resultado
+    # Guardar los resultados obtenidos y mostrarlos
     egresos = cursor.fetchall()
     for egreso in egresos:
         print(egreso)
 
+# Edita un egreso existente mediante su ID.
+# Permite conservar los valores actuales dejando campos vacíos.
 def editar_egreso(conn, cursor):
-    id_egreso = int(input("Escriba el ID: "))
+    # Solicitar el ID del egreso que se desea modificar
+    id_egreso = pedir_entero("Escriba el ID: ")
 
-    # Consultar si el ID existe en la base de datos
-    cursor.execute("SELECT * FROM Egresos WHERE id = ?", (id_egreso,)) # (id_egreso,) tupla de un solo elemento
+    # Buscar el egreso seleccionado en la base de datos
+    cursor.execute("SELECT * FROM Egresos WHERE id = ?", (id_egreso,))
    
-    # Guarda en una tupla la primera fila de lo seleccionado por cursor.execute()
+    # Obtener la primera fila encontrada
     fila = cursor.fetchone()
 
-    # Comprobar si existe el ID ingresado
+    # Verificar si existe el registro solicitado
     if fila is None:
         print(f"No existe el ID = {id_egreso} en la base de datos")
     else:
         print(f"""
-                DATOS ACTUALES
+        ======= DATOS ACTUALES =======
               
         Fecha   : {fila[1]}
         Concepto: {fila[2]}
@@ -50,7 +57,8 @@ def editar_egreso(conn, cursor):
         (Presione Enter para conservar el valor actual)
         """)
 
-        # Lógica para guardar o mantener datos
+        # Solicitar nuevos datos.
+        # Si el usuario deja un campo vacío, se conserva el valor anterior.
         nueva_fecha = input("Nueva Fecha: ")
         if nueva_fecha == "":
             nueva_fecha = fila[1]
@@ -59,17 +67,18 @@ def editar_egreso(conn, cursor):
         if nuevo_concepto == "":
             nuevo_concepto = fila[2]
         
-        # Cambiar str a float para que no haya errores en los datos
-        nuevo_monto = input("Nuevo Monto: ")
-        if nuevo_monto == "":
-            nuevo_monto = fila[3]
-        else:
-            nuevo_monto = float(nuevo_monto)
+        # Solicitar nuevo monto permitiendo conservar el valor actual
+        nuevo_monto = pedir_monto_opcional("Nuevo Monto: ", fila[3])
 
-        # Tupla creada para pasarle al cursor y almacenar los nuevos datos
-        datos_actualizados = (nueva_fecha, nuevo_concepto, nuevo_monto, id_egreso)
+        # Crear tupla con los datos actualizados y el ID del registro
+        datos_actualizados = (
+            nueva_fecha,
+            nuevo_concepto,
+            nuevo_monto,
+            id_egreso
+        )
 
-        # Actualizar Egresos
+        # Actualizar el registro seleccionado en la tabla Egresos
         cursor.execute("""UPDATE Egresos 
                        SET 
                         fecha = ?, 
@@ -78,40 +87,44 @@ def editar_egreso(conn, cursor):
                         WHERE id = ?
                        """, datos_actualizados)
         
-        #Guardar cambios
+        # Guardar los cambios realizados
         conn.commit()
         print("Egreso actualizado correctamente.\n")
 
+# Elimina un egreso existente mediante su ID.
+# Antes de eliminar solicita confirmación al usuario.
 def eliminar_egreso(conn, cursor):
-    id_egreso = int(input("Ingrese el ID: "))
+    # Solicitar el ID del egreso a eliminar
+    id_egreso = pedir_entero("Ingrese el ID: ")
 
-    # Consultar si el ID existe en la Base de datos
+    # Buscar el registro antes de eliminarlo para verificar que existe
     cursor.execute("SELECT * FROM Egresos WHERE id = ?", (id_egreso,))
 
-    # Guardar la fila seleccionada en el cursor
+    # Obtener el registro encontrado
     fila = cursor.fetchone()
 
-    # Comprobar si existe el ID en la base de datos
+    # Verificar si existe el egreso
     if fila is None:
         print(f"No existe el ID = {id_egreso} en la base de datos.\n")
     else:
-        # Mostrar registro
+        # Mostrar los datos del egreso que será eliminado
         print(f"""
-                DATOS ACTUALES
+        ======= DATOS ACTUALES =======
                      
         Fecha   : {fila[1]}
         Concepto: {fila[2]}
         Monto   : {fila[3]}
         """)
 
-        # Confirmar para eliminar y opciones
-        confirmacion = int(input("¿Esta seguro de eliminar el egreso en pantalla? (1.Si  2.No): "))
-        if confirmacion == 1:
+        # Solicitar confirmación antes de eliminar el registro
+        print("Se eliminará el egreso mostrado.")
+
+        if pedir_confirmacion() == "s":
+            # Eliminar el egreso seleccionado
             cursor.execute("DELETE FROM Egresos WHERE id = ?", (id_egreso,))
-            # Guardar cambios
+
+            # Guardar los cambios realizados
             conn.commit()
-            print("Listo. Egreso eliminado correctamente.\n")
-        elif confirmacion == 2:
-            print("Ok. Redirigiendo al menu.\n")
+            print("Egreso eliminado correctamente.\n")
         else:
-            print("Error: redirigiendo al menu.\n")  
+            print("Ok. Redirigiendo al menú.\n")
